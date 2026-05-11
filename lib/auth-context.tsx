@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginAsDemo = useCallback((role: UserRole) => {
     const demoUser = demoUsers[role];
-    const fakeToken = "demo-token-" + Date.now();
+    const fakeToken = "demo-token-" + role + "-" + Date.now();
     setToken(fakeToken);
     setTokenState(fakeToken);
     setUser(demoUser);

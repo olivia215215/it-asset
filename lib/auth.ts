@@ -21,6 +21,15 @@ const AUTH_SECRET =
   process.env.AUTH_SECRET ?? "it-asset-dev-secret-change-in-production";
 const secretKey = new TextEncoder().encode(AUTH_SECRET);
 
+const demoTokenPrefix = "demo-token-";
+
+const demoUserMap: Record<string, AuthUser> = {
+  EMPLOYEE:  { userId: "demo-emp",  role: "EMPLOYEE",  deptId: "dept-tech" },
+  MANAGER:   { userId: "demo-mgr",  role: "MANAGER",   deptId: "dept-tech" },
+  IT_ADMIN:  { userId: "demo-it",   role: "IT_ADMIN",  deptId: "dept-it" },
+  EXECUTIVE: { userId: "demo-exec", role: "EXECUTIVE", deptId: "dept-mgmt" },
+};
+
 export async function verifyAuth(
   request: NextRequest,
 ): Promise<AuthUser> {
@@ -31,6 +40,21 @@ export async function verifyAuth(
   }
 
   const token = authHeader.slice(7);
+
+  // Demo token: bypass JWT verification
+  if (token.startsWith(demoTokenPrefix)) {
+    const tokenBody = token.slice(demoTokenPrefix.length);
+    const lastDash = tokenBody.lastIndexOf("-");
+    if (lastDash === -1) {
+      throw new AuthError("Invalid demo token");
+    }
+    const role = tokenBody.slice(0, lastDash);
+    const authUser = demoUserMap[role];
+    if (!authUser) {
+      throw new AuthError("Invalid demo token");
+    }
+    return authUser;
+  }
 
   try {
     const { payload } = await jwtVerify(token, secretKey);
