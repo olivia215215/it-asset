@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tianzi Rike - IT 资产管理系统
 
-## Getting Started
+基于 Next.js 16 + Prisma 7 + PostgreSQL 16 的企业 IT 资产全生命周期管理系统，支持资产入库、领用、归还、维修、转移、盘点等功能。
 
-First, run the development server:
+## 快速启动
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# 1. 配置环境变量
+cp .env.example .env
+# 编辑 .env，填入 AI_API_KEY（DeepSeek API Key）
+
+# 2. 启动服务
+docker-compose up -d
+
+# 3. 访问系统
+# 打开浏览器访问 http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 默认账户
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+创建种子数据后，可使用以下账户登录（密码均为 `password`）：
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| 邮箱 | 角色 | 说明 |
+|------|------|------|
+| admin@itasset.local | IT_ADMIN | IT 管理员 |
+| manager@itasset.local | MANAGER | 部门经理 |
+| executive@itasset.local | EXECUTIVE | 高管 |
+| employee1@itasset.local | EMPLOYEE | 员工甲 |
+| employee2@itasset.local | EMPLOYEE | 员工乙 |
+| employee3@itasset.local | EMPLOYEE | 员工丙 |
 
-## Learn More
+## 本地开发
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# 安装依赖
+npm ci
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# 配置环境变量后生成 Prisma 客户端
+npx prisma generate
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# 初始化数据库
+npx prisma db push
+npx prisma db seed
 
-## Deploy on Vercel
+# 启动开发服务器
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 技术栈
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **框架**: Next.js 16
+- **ORM**: Prisma 7
+- **数据库**: PostgreSQL 16
+- **UI**: Base UI + Tailwind CSS 4 + shadcn
+- **认证**: JWT (jose) + bcrypt
+- **AI**: DeepSeek API
