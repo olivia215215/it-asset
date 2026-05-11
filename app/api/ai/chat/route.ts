@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       })),
     };
 
-    const systemPrompt = `你是一个IT助手，帮助用户处理IT资产管理相关事务。
+    const systemPrompt = `你是一个IT助手，帮助用户处理IT资产管理相关事务。请始终以 JSON 格式输出。
 
 ## 原则
 - 使用简洁友好的中文回复
