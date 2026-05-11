@@ -1,0 +1,256 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  EMPLOYEE
+  MANAGER
+  IT_ADMIN
+  EXECUTIVE
+}
+
+enum UserStatus {
+  ACTIVE
+  RESIGNED
+}
+
+enum AssetModelCategory {
+  LAPTOP
+  MONITOR
+  KEYBOARD
+  MOUSE
+  HEADPHONE
+  OTHER
+}
+
+enum AssetModelStatus {
+  ACTIVE
+  DISCONTINUED
+}
+
+enum AssetInstanceStatus {
+  IN_STOCK
+  AVAILABLE
+  ASSIGNED
+  IN_USE
+  RETURNING
+  REPAIRING
+  TRANSFERRING
+  LOST
+  SCRAPPED
+}
+
+enum TicketType {
+  APPLY
+  RETURN
+  REPAIR
+  TRANSFER
+}
+
+enum TicketStatus {
+  SUBMITTED
+  PENDING_MANAGER_1
+  PENDING_MANAGER_2
+  PENDING_IT
+  APPROVED
+  REJECTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  APPROVAL_REQUEST
+  APPROVAL_RESULT
+  PICKUP_READY
+  REPAIR_UPDATE
+  WARRANTY_EXPIRY
+  TRANSFER_REQUEST
+  RETURN_SUBMITTED
+}
+
+enum InventorySessionStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Department {
+  id        String   @id @default(cuid())
+  name      String
+  managerId String?  @unique @map("manager_id")
+
+  manager           User?           @relation("DepartmentManager", fields: [managerId], references: [id])
+  users             User[]
+  assets            AssetInstance[]
+  targetDeptTickets Ticket[]        @relation
+
+  @@map("departments")
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String     @map("password_hash")
+  name         String
+  role         UserRole
+  deptId       String     @map("dept_id")
+  status       UserStatus @default(ACTIVE)
+
+  department        Department          @relation(fields: [deptId], references: [id])
+  managedDept       Department?         @relation("DepartmentManager")
+  heldAssets        AssetInstance[]
+  appliedTickets    Ticket[]            @relation("Applicant")
+  assignedTickets   Ticket[]            @relation("AssignedBy")
+  processedTickets  Ticket[]            @relation("Processor")
+  deputyApprovals   Ticket[]            @relation("DeputyApprover")
+  fromHolderTickets Ticket[]            @relation("FromHolder")
+  toHolderTickets   Ticket[]            @relation("ToHolder")
+  auditLogs         AuditLog[]
+  notifications     Notification[]
+  inventorySessions InventorySession[]
+
+  @@map("users")
+}
+
+model AssetModel {
+  id             String             @id
+  category       AssetModelCategory
+  brandName      String             @map("brand_name")
+  modelName      String             @map("model_name")
+  specs          Json
+  purchasePrice  Decimal            @map("purchase_price") @db.Decimal(10, 2)
+  supplier       String
+  warrantyMonths Int                @map("warranty_months")
+  status         AssetModelStatus   @default(ACTIVE)
+
+  instances     AssetInstance[]
+  ticketTargets Ticket[]       @relation
+
+  @@map("asset_models")
+}
+
+model AssetInstance {
+  id             String               @id
+  sn             String               @unique
+  modelId        String               @map("model_id")
+  status         AssetInstanceStatus
+  holderId       String?              @map("holder_id")
+  deptId         String?              @map("dept_id")
+  purchaseDate   DateTime             @map("purchase_date")
+  warrantyExpiry DateTime             @map("warranty_expiry")
+  scrapReason    String?              @map("scrap_reason") @db.Text
+  lostReason     String?              @map("lost_reason") @db.Text
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+
+  model       AssetModel          @relation(fields: [modelId], references: [id])
+  holder      User?               @relation(fields: [holderId], references: [id])
+  department  Department?         @relation(fields: [deptId], references: [id])
+  tickets     Ticket[]
+  scans       InventoryScan[]
+  notifications Notification[]
+
+  @@map("asset_instances")
+}
+
+model Ticket {
+  id              String       @id @default(cuid())
+  type            TicketType
+  status          TicketStatus
+  applicantId     String       @map("applicant_id")
+  targetAssetId   String?      @map("target_asset_id")
+  targetModelId   String?      @map("target_model_id")
+  reason          String       @db.Text
+  rejectReason    String?      @map("reject_reason") @db.Text
+  aiTriageResult  Json?        @map("ai_triage_result")
+  aiRecommendation Json?       @map("ai_recommendation")
+  forceRepair     Boolean      @default(false) @map("force_repair")
+  assignedById    String?      @map("assigned_by_id")
+  processorId     String?      @map("processor_id")
+  fromHolderId    String?      @map("from_holder_id")
+  toHolderId      String?      @map("to_holder_id")
+  targetDeptId    String?      @map("target_dept_id")
+  deputyApproval  Boolean      @default(false) @map("deputy_approval")
+  deputyApproverId String?     @map("deputy_approver_id")
+  completedAt     DateTime?    @map("completed_at")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  applicant      User           @relation("Applicant", fields: [applicantId], references: [id])
+  targetAsset    AssetInstance? @relation(fields: [targetAssetId], references: [id])
+  targetModel    AssetModel?    @relation(fields: [targetModelId], references: [id])
+  assignedBy     User?          @relation("AssignedBy", fields: [assignedById], references: [id])
+  processor      User?          @relation("Processor", fields: [processorId], references: [id])
+  fromHolder     User?          @relation("FromHolder", fields: [fromHolderId], references: [id])
+  toHolder       User?          @relation("ToHolder", fields: [toHolderId], references: [id])
+  targetDept     Department?    @relation(fields: [targetDeptId], references: [id])
+  deputyApprover User?          @relation("DeputyApprover", fields: [deputyApproverId], references: [id])
+
+  notifications Notification[]
+
+  @@map("tickets")
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  action         String
+  operatorId     String   @map("operator_id")
+  targetType     String   @map("target_type")
+  targetId       String   @map("target_id")
+  beforeSnapshot Json?    @map("before_snapshot")
+  afterSnapshot  Json?    @map("after_snapshot")
+  metadata       Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  operator User @relation(fields: [operatorId], references: [id])
+
+  @@map("audit_logs")
+}
+
+model Notification {
+  id             String           @id @default(cuid())
+  userId         String           @map("user_id")
+  type           NotificationType
+  title          String
+  body           String           @db.Text
+  read           Boolean          @default(false)
+  relatedTicketId String?         @map("related_ticket_id")
+  relatedAssetId String?          @map("related_asset_id")
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  user         User            @relation(fields: [userId], references: [id])
+  relatedTicket Ticket?         @relation(fields: [relatedTicketId], references: [id])
+  relatedAsset AssetInstance?   @relation(fields: [relatedAssetId], references: [id])
+
+  @@map("notifications")
+}
+
+model InventorySession {
+  id          String                   @id @default(cuid())
+  startedById String                   @map("started_by_id")
+  status      InventorySessionStatus
+  startedAt   DateTime                 @default(now()) @map("started_at")
+  completedAt DateTime?                @map("completed_at")
+
+  startedBy User           @relation(fields: [startedById], references: [id])
+  scans     InventoryScan[]
+
+  @@map("inventory_sessions")
+}
+
+model InventoryScan {
+  id        String   @id @default(cuid())
+  sessionId String   @map("session_id")
+  assetId   String   @map("asset_id")
+  scannedAt DateTime @default(now()) @map("scanned_at")
+
+  session InventorySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  asset   AssetInstance    @relation(fields: [assetId], references: [id])
+
+  @@unique([sessionId, assetId])
+  @@map("inventory_scans")
+}
