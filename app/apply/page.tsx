@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api-client";
@@ -12,18 +12,9 @@ interface Recommendation {
   reason: string;
 }
 
-interface ModelInfo {
-  id: string;
-  brandName: string;
-  modelName: string;
-  category: string;
-  stock?: number;
-}
-
 export default function ApplyPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const [models, setModels] = useState<ModelInfo[]>([]);
   const [selectedModelId, setSelectedModelId] = useState("");
   const [reason, setReason] = useState("");
   const [requirement, setRequirement] = useState("");
@@ -33,31 +24,26 @@ export default function ApplyPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
-  // Fetch available models on mount
-  useEffect(() => {
-    apiFetch<{ data: ModelInfo[] }>("/api/assets/mine", { params: { page: 1, pageSize: 1 } })
-      .then(() => {
-        // Not the right endpoint, skip fetching models for now
-      })
-      .catch(() => {});
-    // We'll rely on the AI recommend to suggest models
-  }, []);
-
   const handleRecommend = async () => {
     if (!requirement.trim()) return;
     setRecommending(true);
     setRecommendError("");
     setRecommendations([]);
     try {
-      const res = await apiFetch<{ ok: boolean; data: { recommendations: Recommendation[]; topPick: string } }>(
+      type RecommendResponse =
+        | { ok: true; data: { recommendations: Recommendation[]; topPick: string } }
+        | { ok: false; fallback: string };
+      const res = await apiFetch<RecommendResponse>(
         "/api/ai/recommend",
         { method: "POST", body: { requirement } },
       );
-      const data = res.ok ? res.data : (res as unknown as { recommendations: Recommendation[]; topPick: string });
-      const recs = "recommendations" in data ? data.recommendations : (res as unknown as { recommendations: Recommendation[] }).recommendations;
-      setRecommendations(recs ?? []);
-      if (recs?.length > 0) {
-        setSelectedModelId(recs[0].modelId);
+      if (res.ok) {
+        setRecommendations(res.data.recommendations);
+        if (res.data.recommendations.length > 0) {
+          setSelectedModelId(res.data.recommendations[0].modelId);
+        }
+      } else {
+        setRecommendError(res.fallback);
       }
     } catch (err) {
       setRecommendError(err instanceof Error ? err.message : "推荐失败，请稍后重试");
