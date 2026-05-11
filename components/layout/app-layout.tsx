@@ -26,16 +26,16 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const isLoginPage = pathname === "/login";
 
+  useEffect(() => {
+    if (!loading && !user && !isLoginPage) {
+      router.replace("/login");
+    }
+  }, [loading, user, isLoginPage, router]);
+
   // Login page: render directly, no auth check, no sidebar/header
   if (isLoginPage) {
     return <>{children}</>;
   }
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/login");
-    }
-  }, [loading, user, router]);
 
   if (loading) {
     return (
