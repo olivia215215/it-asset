@@ -24,11 +24,18 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
+  const isLoginPage = pathname === "/login";
+
+  // Login page: render directly, no auth check, no sidebar/header
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
+
   useEffect(() => {
-    if (!loading && !user && pathname !== "/login") {
+    if (!loading && !user) {
       router.replace("/login");
     }
-  }, [loading, user, pathname, router]);
+  }, [loading, user, router]);
 
   if (loading) {
     return (
