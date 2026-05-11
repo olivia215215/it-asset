@@ -15,6 +15,8 @@ export function RoleGuard({
 }: RoleGuardProps) {
   const { user } = useAuth();
 
+  if (!user) return <>{fallback}</>;
+
   if (!roles.includes(user.role)) {
     return <>{fallback}</>;
   }

@@ -19,7 +19,7 @@ export default function ItAuditPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user.role !== "IT_ADMIN") return;
+    if (user?.role !== "IT_ADMIN") return;
     // Static placeholder
     setTimeout(() => {
       setEntries([]);
@@ -27,6 +27,7 @@ export default function ItAuditPage() {
     }, 500);
   }, []);
 
+  if (!user) return null;
   if (user.role !== "IT_ADMIN") {
     return (
       <div className="flex flex-1 items-center justify-center p-4">

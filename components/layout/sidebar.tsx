@@ -72,6 +72,7 @@ interface SidebarProps {
 export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
   const { user, setRole } = useAuth();
+  if (!user) return null;
   const filteredItems = filterNavItems(navItems, user.role);
 
   const allRoles: UserRole[] = ["EMPLOYEE", "MANAGER", "IT_ADMIN", "EXECUTIVE"];

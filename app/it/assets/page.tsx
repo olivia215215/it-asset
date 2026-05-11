@@ -76,16 +76,17 @@ export default function ItAssetsPage() {
   };
 
   useEffect(() => {
-    if (user.role === "IT_ADMIN") fetchAssets(1);
+    if (user?.role === "IT_ADMIN") fetchAssets(1);
   }, [statusFilter, categoryFilter]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (user.role === "IT_ADMIN") fetchAssets(1);
+      if (user?.role === "IT_ADMIN") fetchAssets(1);
     }, 300);
     return () => clearTimeout(timer);
   }, [snSearch]);
 
+  if (!user) return null;
   if (user.role !== "IT_ADMIN") {
     return (
       <div className="flex flex-1 items-center justify-center p-4">

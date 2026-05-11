@@ -50,9 +50,10 @@ export default function ExecDashboardPage() {
   };
 
   useEffect(() => {
-    if (user.role === "EXECUTIVE") fetchData();
+    if (user?.role === "EXECUTIVE") fetchData();
   }, []);
 
+  if (!user) return null;
   if (user.role !== "EXECUTIVE") {
     return (
       <div className="flex flex-1 items-center justify-center p-4">
@@ -61,7 +62,6 @@ export default function ExecDashboardPage() {
     );
   }
 
-  // Compute chart data
   const categoryData = (() => {
     const map = new Map<string, number>();
     for (const a of assets) {

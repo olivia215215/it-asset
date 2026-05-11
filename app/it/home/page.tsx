@@ -49,6 +49,7 @@ export default function ItHomePage() {
     fetchCounts();
   }, []);
 
+  if (!user) return null;
   if (user.role !== "IT_ADMIN") {
     return (
       <div className="flex flex-1 items-center justify-center p-4">

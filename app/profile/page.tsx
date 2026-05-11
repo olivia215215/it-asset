@@ -20,6 +20,8 @@ export default function ProfilePage() {
     router.push("/login");
   };
 
+  if (!user) return null;
+
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 max-w-md mx-auto w-full">
       <h1 className="text-2xl font-bold">个人资料</h1>

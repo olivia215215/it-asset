@@ -32,6 +32,7 @@ export default function ExecInsightsPage() {
     }
   };
 
+  if (!user) return null;
   if (user.role !== "EXECUTIVE") {
     return (
       <div className="flex flex-1 items-center justify-center p-4">

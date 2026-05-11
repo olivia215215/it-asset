@@ -47,6 +47,7 @@ export default function DeptBoardPage() {
     fetchData();
   }, []);
 
+  if (!user) return null;
   if (user.role !== "MANAGER") {
     return (
       <div className="flex flex-1 items-center justify-center p-4">

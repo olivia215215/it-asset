@@ -115,6 +115,8 @@ export default function TicketDetailPage() {
     return map[s] ?? s;
   };
 
+  if (!user) return null;
+
   // Determine button visibility based on role and status
   const canApprove =
     (user.role === "MANAGER" || user.role === "IT_ADMIN") &&

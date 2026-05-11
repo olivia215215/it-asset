@@ -28,7 +28,7 @@ export default function ItUsersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user.role !== "IT_ADMIN") return;
+    if (user?.role !== "IT_ADMIN") return;
     // Static demo data
     setDepartments([
       {
@@ -54,6 +54,7 @@ export default function ItUsersPage() {
     setLoading(false);
   }, []);
 
+  if (!user) return null;
   if (user.role !== "IT_ADMIN") {
     return (
       <div className="flex flex-1 items-center justify-center p-4">

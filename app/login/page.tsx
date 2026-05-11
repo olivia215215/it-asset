@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, loginAsDemo } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -82,6 +82,42 @@ export default function LoginPage() {
             {loading ? "登录中..." : "登录"}
           </Button>
         </form>
+
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">或</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="outline"
+            onClick={() => { loginAsDemo("EMPLOYEE"); router.push("/home"); }}
+          >
+            员工演示
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => { loginAsDemo("MANAGER"); router.push("/home"); }}
+          >
+            主管演示
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => { loginAsDemo("IT_ADMIN"); router.push("/home"); }}
+          >
+            IT 演示
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => { loginAsDemo("EXECUTIVE"); router.push("/home"); }}
+          >
+            高管演示
+          </Button>
+        </div>
       </div>
     </div>
   );

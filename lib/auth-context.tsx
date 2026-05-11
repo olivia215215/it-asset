@@ -31,20 +31,12 @@ interface SessionResponse {
   user: User;
 }
 
-const defaultUser: User = {
-  id: "default-user-id",
-  name: "张明",
-  email: "zhangming@example.com",
-  role: "EMPLOYEE",
-  department: "技术部",
-  departmentId: "dept-tech",
-};
-
 interface AuthContextType {
-  user: User;
+  user: User | null;
   token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginAsDemo: (role: UserRole) => void;
   logout: () => void;
   setRole: (role: UserRole) => void;
   unreadNotifications: number;
@@ -53,8 +45,15 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const demoUsers: Record<UserRole, User> = {
+  EMPLOYEE:  { id: "demo-emp",  name: "张三", email: "zhangsan@example.com",   role: "EMPLOYEE",  department: "技术部", departmentId: "dept-tech" },
+  MANAGER:   { id: "demo-mgr",  name: "李四", email: "lisi@example.com",       role: "MANAGER",   department: "技术部", departmentId: "dept-tech" },
+  IT_ADMIN:  { id: "demo-it",   name: "王五", email: "wangwu@example.com",     role: "IT_ADMIN",  department: "IT 部", departmentId: "dept-it" },
+  EXECUTIVE: { id: "demo-exec", name: "赵六", email: "zhaoliu@example.com",    role: "EXECUTIVE", department: "管理层", departmentId: "dept-mgmt" },
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User>(defaultUser);
+  const [user, setUser] = useState<User | null>(null);
   const [token, setTokenState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
@@ -69,10 +68,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(data.user);
         })
         .catch(() => {
-          // Session invalid, use default user
+          // Session invalid, clear token
           clearToken();
           setTokenState(null);
-          setUser(defaultUser);
+          setUser(null);
         })
         .finally(() => {
           setLoading(false);
@@ -92,6 +91,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(data.user);
   }, []);
 
+  const loginAsDemo = useCallback((role: UserRole) => {
+    const demoUser = demoUsers[role];
+    const fakeToken = "demo-token-" + Date.now();
+    setToken(fakeToken);
+    setTokenState(fakeToken);
+    setUser(demoUser);
+  }, []);
+
   const logout = useCallback(() => {
     // Fire and forget the logout request
     apiFetch("/api/auth/logout", { method: "POST" }).catch(() => {
@@ -99,12 +106,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     clearToken();
     setTokenState(null);
-    setUser(defaultUser);
+    setUser(null);
   }, []);
 
   const setRole = useCallback(
     (role: UserRole) => {
-      setUser((prev) => ({ ...prev, role }));
+      setUser((prev) => (prev ? { ...prev, role } : prev));
     },
     [],
   );
@@ -115,12 +122,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       token,
       loading,
       login,
+      loginAsDemo,
       logout,
       setRole,
       unreadNotifications,
       setUnreadNotifications,
     }),
-    [user, token, loading, login, logout, setRole, unreadNotifications],
+    [user, token, loading, login, loginAsDemo, logout, setRole, unreadNotifications],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

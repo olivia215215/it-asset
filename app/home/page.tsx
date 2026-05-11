@@ -70,6 +70,14 @@ export default function HomePage() {
     );
   }
 
+  if (!user) {
+    return (
+      <div className="flex flex-1 items-center justify-center px-4">
+        <p className="text-muted-foreground">请先登录</p>
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4">

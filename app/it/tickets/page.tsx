@@ -67,9 +67,10 @@ export default function ItTicketsPage() {
   };
 
   useEffect(() => {
-    if (user.role === "IT_ADMIN") fetchTickets(1);
+    if (user?.role === "IT_ADMIN") fetchTickets(1);
   }, [typeFilter, statusFilter]);
 
+  if (!user) return null;
   if (user.role !== "IT_ADMIN") {
     return (
       <div className="flex flex-1 items-center justify-center p-4">

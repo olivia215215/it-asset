@@ -64,6 +64,8 @@ export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout } = useAuth();
   const breadcrumbs = buildBreadcrumbs(pathname);
 
+  if (!user) return null;
+
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4">
       {/* Left: Menu button + Breadcrumbs */}

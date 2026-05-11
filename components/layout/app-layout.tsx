@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -16,8 +18,29 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (!loading && !user && pathname !== "/login") {
+      router.replace("/login");
+    }
+  }, [loading, user, pathname, router]);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="flex h-screen flex-col md:flex-row">

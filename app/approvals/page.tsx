@@ -112,6 +112,7 @@ export default function ApprovalsPage() {
     );
   };
 
+  if (!user) return null;
   if (!["MANAGER", "IT_ADMIN"].includes(user.role)) {
     return (
       <div className="flex flex-1 items-center justify-center p-4">

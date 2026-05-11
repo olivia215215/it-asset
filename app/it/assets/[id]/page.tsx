@@ -73,7 +73,7 @@ export default function ItAssetDetailPage() {
   };
 
   useEffect(() => {
-    if (user.role === "IT_ADMIN") fetchDetail();
+    if (user?.role === "IT_ADMIN") fetchDetail();
   }, [id]);
 
   const handleScrap = async () => {
@@ -112,6 +112,7 @@ export default function ItAssetDetailPage() {
     }
   };
 
+  if (!user) return null;
   if (user.role !== "IT_ADMIN") {
     return (
       <div className="flex flex-1 items-center justify-center p-4">
