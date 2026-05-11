@@ -60,6 +60,7 @@ export async function apiFetch<T = unknown>(
   options: ApiFetchOptions = {},
 ): Promise<T> {
   const token = getToken();
+  const isDemo = token?.startsWith("demo-token-");
 
   const headers = new Headers(options.headers);
 
@@ -87,12 +88,17 @@ export async function apiFetch<T = unknown>(
     headers,
   });
 
-  if (response.status === 401) {
+  if (response.status === 401 && !isDemo) {
     clearToken();
     throw new ApiError(401, "Unauthorized");
   }
 
   if (!response.ok) {
+    // Demo mode: return empty data instead of throwing
+    if (isDemo) {
+      return { data: [], pagination: { page: 1, pageSize: 20, total: 0, totalPages: 0 } } as T;
+    }
+
     let message = `Request failed with status ${response.status}`;
     try {
       const responseBody = await response.json();
