@@ -96,7 +96,11 @@ export async function apiFetch<T = unknown>(
   if (!response.ok) {
     // Demo mode: return empty data instead of throwing
     if (isDemo) {
-      return { data: [], pagination: { page: 1, pageSize: 20, total: 0, totalPages: 0 } } as T;
+      // List endpoints (with page param) → empty paginated; detail endpoints → null
+      if (options.params?.page !== undefined) {
+        return { data: [], pagination: { page: 1, pageSize: 20, total: 0, totalPages: 0 } } as T;
+      }
+      return null as T;
     }
 
     let message = `Request failed with status ${response.status}`;

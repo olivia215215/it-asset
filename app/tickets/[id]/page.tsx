@@ -125,6 +125,7 @@ export default function TicketDetailPage() {
   const canReject = canApprove;
   const canCancel =
     ticket &&
+    ticket.applicant &&
     (ticket.applicant.id === user.id || user.role === "IT_ADMIN") &&
     !["COMPLETED", "REJECTED", "CANCELLED"].includes(ticket.status);
 
@@ -172,7 +173,7 @@ export default function TicketDetailPage() {
       <div className="grid grid-cols-2 gap-4">
         <div className="rounded-lg border p-3 space-y-1">
           <p className="text-xs text-muted-foreground">申请人</p>
-          <p className="text-sm font-medium">{ticket.applicant.name}</p>
+          <p className="text-sm font-medium">{ticket.applicant?.name}</p>
         </div>
         <div className="rounded-lg border p-3 space-y-1">
           <p className="text-xs text-muted-foreground">申请时间</p>
